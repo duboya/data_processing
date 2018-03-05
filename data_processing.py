@@ -10,13 +10,27 @@ def input_data(data_path):
     # !/usr/bin/python3
 
     # 打开一个文件
-    infile = open(data_path, "r", encoding='UTF-8')
-    # blank_removed_file = open("blank_removed_file.txt", 'wb')
+    try:
+        infile = open(data_path, "r", encoding='UTF-8')
+    except FileNotFoundError:
+        print("文件路径错误")
 
-    with open("C:\\Users\\dby_freedom\\Desktop\\data_processing\\2018-3-2.csv", "a+", newline='') as csvfile:
-        # 写入多行用writerows
-        writer = csv.writer(csvfile, delimiter=' ', quotechar='|', dialect='excel')
-        writer.writerow(["收件人姓名","收件人电话","收件人地址","物品名称","价格","价格","	下单微信名称","下单时间"])
+    date = datetime.datetime.now()
+    print("当前的日期和时间是 %s" % date)
+    print("year-month-day 格式是  %s-%s-%s" % (date.year, date.month, date.day))
+
+    # 将文件名称命名依据日期命名，格式为year-month-day
+    name_saved_file=str(date.year)+"-"+str(date.month)+"-"+str(date.day)+".csv"
+
+    try:
+        with open(name_saved_file, "r", newline='') as juduge_csv_exist:
+            read = csv.reader(juduge_csv_exist)
+    except FileNotFoundError:
+        with open(name_saved_file, "a+", newline='') as csvfile:
+
+            # 写入多行用writerows
+            writer = csv.writer(csvfile)
+            writer.writerow(["收件人姓名","收件人电话","收件人地址","物品名称","价格","价格","	下单微信名称","下单时间"])
 
     each_message=[] # 各商户信息
     each_message_element=0 #用于计数每单信息元素收集量
@@ -27,9 +41,11 @@ def input_data(data_path):
             # line = filter(lambda ch: ch not in ' ', line)
             # line.strip()
             if not line.strip():
+
+                eachline_length = 0
                 continue
             else:
-                line_next=line
+
                 eachline_length=0
                 for line_element in line: #将含有中文、数字、英文的行放入各发单信息中
                     if is_chinese_number_alphabet(line_element):
@@ -89,7 +105,6 @@ def input_data(data_path):
                         if is_chinese(uchar):
                             length_first_element_chinese_count += 1
 
-
                     for uchar in each_message[1]:  # 将含有中文、数字、英文的行放入各发单信息中
                         if is_chinese_number_alphabet(uchar):
                             length_second_element_count += 1
@@ -107,6 +122,8 @@ def input_data(data_path):
                         if is_chinese(uchar):
                             length_third_element_chinese_count += 1
 
+
+
                     # 首先提取出最大长度行作为地址，其次，依照行所含数字长度与汉字长度进行比较判定电话、名字
                     if length_first_element_count >= length_second_element_count \
                             and length_first_element_count >= length_third_element_count:
@@ -121,6 +138,9 @@ def input_data(data_path):
                         else:
                             message_element_name=each_message[1].strip()
                             message_element_phone=each_message[2].strip()
+
+
+
 
                     elif length_second_element_count >= length_first_element_count \
                             and length_second_element_count >= length_third_element_count:
@@ -142,15 +162,63 @@ def input_data(data_path):
                         else:
                             message_element_name = each_message[0].strip()
                             message_element_phone = each_message[1].strip()
+
                     each_message_element=0
 
-                    # 输出信息到以日期命名的文件中
+                    # 判定是否包含冒号“：或者:”，包含的话，则冒号为界限，只保留冒号后内容；
+                    # 不包含的话，则去除关键字：收货人、电话、地址、收款人、名字、姓名等关键字
+                    final_first_element = each_message[0].strip()
+                    final_second_element = each_message[1].strip()
+                    final_third_element = each_message[2].strip()
 
+                    # symbol_set = ":："
+
+                    # # if symbol_set in final_first_element:
+
+                    # final_first_element = filter(lambda ch: ch not in '：:', final_first_element)
+                    # print(re.split(r'(?:,|;|\s)\s*：'.decode("utf-8"), final_first_element))
+                    # print('--------------------final_first_element----------------------')
+                    # print(final_first_element)
+
+                        # final_first_element = final_first_element.split(':', 1)[1]
+
+
+                    if re.search('[:：]', message_element_name):
+                        message_element_name = re.split('[:：]', message_element_name, 1)[1]
+
+                    elif re.search('[姓名 名字]', message_element_name):
+                        message_element_name = re.split('[姓名 名字]', message_element_name,2)[-1]
+                        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
+                    print('--------------------message_element_name----------------------')
+                    print(message_element_name)
+
+                    if re.search('[:：]', message_element_phone):
+                        message_element_phone = re.split('[:：]', message_element_phone, 1)[1]
+                    elif re.search('[电话 号码 手机]', message_element_phone):
+                        message_element_phone = re.split('[电话 号码 手机]', message_element_phone,2)[-1]
+                        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
+                    print('--------------------message_element_phone----------------------')
+                    print(message_element_phone)
+
+                    if re.search('[:：]', message_element_address):
+                        message_element_address = re.split('[:：]', message_element_address, 1)[1]
+                    elif re.search('[地址]', message_element_address):
+                        message_element_address = re.split('[地址]', message_element_address, 2)[-1]
+                        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
+                    print('--------------------message_element_address----------------------')
+                    print(message_element_address.strip())
+
+                    message_element_name = message_element_name.strip()
+                    message_element_phone=message_element_phone.strip()
+                    message_element_address=message_element_address.strip()
+
+                    # 输出信息到以日期命名的文件中
                     final_message=[]
                     final_message.append(message_element_name)
                     final_message.append(message_element_phone)
                     final_message.append(message_element_address)
                     final_message.append(message_element_product)
+
 
                     print("--------------------final_message-----------------------")
                     print(final_message)
@@ -159,13 +227,13 @@ def input_data(data_path):
                     #               "收件人地址":message_element_address,"物品名称":message_element_product,
                     #               "价格":[],"价格":[],"	下单微信名称":[],"下单时间":[]})
                     # df.to_excel('test.xlsx', sheet_name='sheet1', index=False)
-                    with open("C:\\Users\\dby_freedom\\Desktop\\data_processing\\2018-3-2.csv", "a+", newline='') as csvfile:
+                    with open(name_saved_file, "a+", newline='') as csvfile:
                         # 写入多行用writerows
-                        writer=csv.writer(csvfile,delimiter=' ',quotechar='|', dialect='excel')
+                        writer=csv.writer(csvfile)
                         # writer.writerow(["111".encode(),"fefe".encode(),"fef33".encode(),"fef".encode()])
                         writer.writerow(final_message)
-                        # writer.writerow([str.encode(message_element_name),str.encode(message_element_phone),str.encode(message_element_address),str.encode(message_element_product)])
-                        # writer.writerows([[0, 1, 3], [1, 2, 3], [2, 3, 4]])
+                        # writer.writerow([message_element_name,message_element_phone,message_element_address,message_element_product])
+                        # writer.writerows([[0, 1, 3, 1], [1, 2, 3, 1], [2, 3, 4, 1]])
 
                 print(eachline_length)
             # if line.strip():
@@ -194,7 +262,7 @@ def output_data():
         # 先写入columns_name
         writer.writerow(["收件人姓名","收件人电话","收件人地址","物品名称","价格","价格","	下单微信名称","下单时间"])
         # 写入多行用writerows
-        writer.writerows([[0, 1, 3], [1, 2, 3], [2, 3, 4]])
+        # writer.writerows([[0, 1, 3], [1, 2, 3], [2, 3, 4]])
 
 
 # 判断一个unicode是否是汉字
