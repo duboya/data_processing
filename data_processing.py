@@ -59,7 +59,7 @@ def input_data(data_path):
                     each_message, each_message_element, exception_signal = \
                         mode_five(each_message, name_saved_file, each_message_element)
                 else:
-                    print("输入操作失败")
+                    print("写入csv操作失败")
                     break
             else: # 非空行下的操作
                 each_message_element += 1
@@ -84,7 +84,7 @@ def input_data(data_path):
             each_message, each_message_element, exception_signal = \
                 mode_five(each_message, name_saved_file, each_message_element)
         elif exception_signal:
-            print("输入操作失败")
+            print("写入csv操作失败")
         else:
             print("操作失败")
 

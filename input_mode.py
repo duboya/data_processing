@@ -13,22 +13,26 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
     length_first_element_number_count = 0
     length_first_element_chinese_count = 0
     length_first_element_alpha_count = 0
+    length_first_element_chinese_alpha_count = 0
 
     length_second_element_count = 0
     length_second_element_number_count = 0
     length_second_element_chinese_count = 0
     length_second_element_alpha_count = 0
+    length_second_element_chinese_alpha_count = 0
 
     length_third_element_count = 0
     length_third_element_number_count = 0
     length_third_element_chinese_count = 0
     length_third_element_alpha_count = 0
+    length_third_element_chinese_alpha_count = 0
 
     # 统计各行信息中汉字、数字、英文长度
     for uchar in each_message[0]:  # 将含有中文、数字、英文的行放入各发单信息中
         if is_chinese_number_alphabet(uchar):
             length_first_element_count += 1
-
+        if is_chinese_alphabet(uchar):
+            length_first_element_chinese_alpha_count += 1
         if is_number(uchar):
             length_first_element_number_count += 1
         if is_chinese(uchar):
@@ -39,6 +43,8 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
     for uchar in each_message[1]:  # 将含有中文、数字、英文的行放入各发单信息中
         if is_chinese_number_alphabet(uchar):
             length_second_element_count += 1
+        if is_chinese_alphabet(uchar):
+            length_second_element_chinese_alpha_count += 1
         if is_number(uchar):
             length_second_element_number_count += 1
         if is_chinese(uchar):
@@ -49,6 +55,8 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
     for uchar in each_message[2]:  # 将含有中文、数字、英文的行放入各发单信息中
         if is_chinese_number_alphabet(uchar):
             length_third_element_count += 1
+        if is_chinese_alphabet(uchar):
+            length_third_element_chinese_alpha_count += 1
         if is_number(uchar):
             length_third_element_number_count += 1
         if is_chinese(uchar):
@@ -57,8 +65,8 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
             length_third_element_alpha_count += 1
 
     # 首先提取出最大长度行作为地址，其次，依照行所含数字长度与汉字长度进行比较判定电话、名字
-    if length_first_element_count >= length_second_element_count \
-            and length_first_element_count >= length_third_element_count:
+    if length_first_element_chinese_alpha_count >= length_second_element_chinese_alpha_count \
+            and length_first_element_chinese_alpha_count >= length_third_element_chinese_alpha_count:
         message_element_address = each_message[0].strip()  # 依据各行字符长度，默认最大长度为地址行
 
         print("----------------message_element_address----------------------")
@@ -71,8 +79,8 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
             message_element_name = each_message[1].strip()
             message_element_phone = each_message[2].strip()
 
-    elif length_second_element_count >= length_first_element_count \
-            and length_second_element_count >= length_third_element_count:
+    elif length_second_element_chinese_alpha_count >= length_first_element_chinese_alpha_count \
+            and length_second_element_chinese_alpha_count >= length_third_element_chinese_alpha_count:
         message_element_address = each_message[1].strip()
 
         if length_first_element_number_count >= length_first_element_chinese_count + length_first_element_alpha_count:  # 依据数字长度、汉字长度判定电话及姓名
@@ -98,31 +106,6 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
     final_second_element = each_message[1].strip()
     final_third_element = each_message[2].strip()
 
-    if re.search('[:：]', message_element_name):
-        message_element_name = re.split('[:：]', message_element_name, 1)[1]
-
-    elif re.search('[姓名 名字]', message_element_name):
-        message_element_name = re.split('[姓名 名字]', message_element_name, 2)[-1]
-        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
-    print('--------------------message_element_name----------------------')
-    print(message_element_name)
-
-    if re.search('[:：]', message_element_phone):
-        message_element_phone = re.split('[:：]', message_element_phone, 1)[1]
-    elif re.search('[电话 号码 手机]', message_element_phone):
-        message_element_phone = re.split('[电话 号码 手机]', message_element_phone, 2)[-1]
-        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
-    print('--------------------message_element_phone----------------------')
-    print(message_element_phone)
-
-    if re.search('[:：]', message_element_address):
-        message_element_address = re.split('[:：]', message_element_address, 1)[1]
-    elif re.search('[地址]', message_element_address):
-        message_element_address = re.split('[地址]', message_element_address, 2)[-1]
-        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
-    print('--------------------message_element_address----------------------')
-    print(message_element_address.strip())
-
     # 删除特定字符，如句号等
     message_element_name = message_element_name.strip('。')
     message_element_name = message_element_name.strip('.')
@@ -147,6 +130,31 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
     message_element_phone = message_element_phone.strip()
     message_element_address = message_element_address.strip()
 
+    if re.search('[:：]', message_element_name):
+        message_element_name = re.split('[:：]', message_element_name, 1)[-1]
+
+    elif re.search('[姓名 名字 收货人 收件人]', message_element_name):
+        message_element_name = re.split('[姓名 名字 收货人 收件人]', message_element_name)[-1]
+        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
+    print('--------------------message_element_name----------------------')
+    print(message_element_name)
+
+    if re.search('[:：]', message_element_phone):
+        message_element_phone = re.split('[:：]', message_element_phone, 1)[1]
+    elif re.search('[电话 号码 手机]', message_element_phone):
+        message_element_phone = re.split('[电话 号码 手机]', message_element_phone)[-1]
+        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
+    print('--------------------message_element_phone----------------------')
+    print(message_element_phone)
+
+    if re.search('[:：]', message_element_address):
+        message_element_address = re.split('[:：]', message_element_address, 1)[1]
+    elif re.search('[地址]', message_element_address):
+        message_element_address = re.split('[地址]', message_element_address)[-1]
+        # final_first_element_final = [x for x in re.split(":：".decode, final_first_element, 1) if x]
+    print('--------------------message_element_address----------------------')
+    print(message_element_address.strip())
+
     # 异常情况检查判断：
     # 1. 检验录入数据是否合乎逻辑，如手机号码：188 8384 8682 一共11位，如果电话号码长度不对，在号码后加上“（有问题）”
     if len(message_element_phone) == 11:
@@ -156,8 +164,8 @@ def judge_message_element(each_message_input, name_saved_file, message_element_p
         print("手机号码验证有误")
 
     # 2. 当老用户只发来接收人信息（地址、电话、姓名），不带货物信息时候，物品名称栏填入信息“未发送发货信息”
-    if (message_element_address in message_element_product) or (message_element_name in message_element_product)\
-            or (message_element_name in message_element_product):
+    if (message_element_address in message_element_product) or (message_element_name in message_element_product) \
+            or (message_element_phone in message_element_product):
         message_element_product = "未发送发货信息"
 
     # 输出信息到以日期命名的文件中
